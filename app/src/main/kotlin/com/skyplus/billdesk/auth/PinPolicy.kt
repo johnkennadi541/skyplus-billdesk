@@ -52,13 +52,20 @@ object PinPolicy {
     /** Applies a correct PIN: the ladder resets completely. */
     fun onSuccess(): LockState = LockState()
 
-    /** Each block of five failures doubles the wait, up to half an hour. */
+    /**
+     * Each block of five failures doubles the wait, up to half an hour.
+     *
+     * The doubling stops as soon as it reaches the cap. An unbounded loop would
+     * overflow a Long for a large attempt count and wrap around to a negative
+     * duration - which would unlock the profile instead of locking it.
+     */
     fun lockDuration(attempts: Int): Long {
         if (attempts < MAX_ATTEMPTS) return 0L
-        val block = attempts / MAX_ATTEMPTS
         var duration = FIRST_LOCK_MILLIS
-        repeat((block - 1).coerceAtLeast(0)) {
+        var blocks = attempts / MAX_ATTEMPTS
+        while (blocks > 1 && duration < MAX_LOCK_MILLIS) {
             duration *= 2
+            blocks--
         }
         return minOf(duration, MAX_LOCK_MILLIS)
     }

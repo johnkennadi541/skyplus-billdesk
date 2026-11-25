@@ -27,10 +27,20 @@ object StockCalculator {
     fun apply(item: InventoryItem, movements: List<StockMovement>): InventoryItem =
         item.copy(quantityBase = quantityAfter(item.quantityBase, movements))
 
-    /** Active items at or below their reorder level, most urgent first. */
+    /**
+     * Active items at or below their reorder level, most urgent first.
+     *
+     * Urgency is the ratio to the reorder level, not the raw shortfall: 2 kg short
+     * of rice and 2 pieces short of gas cylinders are not the same thing, and
+     * subtracting base units of grams from pieces would rank them nonsense.
+     */
     fun lowStockItems(items: List<InventoryItem>): List<InventoryItem> =
         items.filter { it.isActive && it.isLowStock }
-            .sortedBy { it.quantityBase - it.reorderLevelBase }
+            .sortedBy { urgency(it) }
+
+    private fun urgency(item: InventoryItem): Double =
+        if (item.reorderLevelBase <= 0L) 0.0
+        else item.quantityBase.toDouble() / item.reorderLevelBase
 
     /** Value of all active stock, in paise. */
     fun totalStockValuePaise(items: List<InventoryItem>): Long =

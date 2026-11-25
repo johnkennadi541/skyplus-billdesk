@@ -104,8 +104,8 @@ class BillingEngineTest {
             ),
             discount = Discount.Percent(10.0)
         )
-        assertEquals(6000L, totals.discountPerLine[0])
-        assertEquals(4000L, totals.discountPerLine[1])
+        assertEquals(600L, totals.discountPerLine[0])
+        assertEquals(400L, totals.discountPerLine[1])
         assertEquals(270L, totals.taxPerLine[0])
         assertEquals(648L, totals.taxPerLine[1])
         assertEquals(918L, totals.taxPaise)
