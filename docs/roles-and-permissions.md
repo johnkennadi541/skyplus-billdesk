@@ -69,9 +69,11 @@ figure can always be traced back to who entered it and when.
 A bill is never deleted. Voiding keeps the row and the reason, so the day's
 accounts can always be reconstructed.
 
-## PIN rules
+## Login rules
 
-- Cashier: 4-digit PIN, fast to type while busy.
-- Admin: 4-6 digit PIN or password, with a delay or lock after repeated failures.
-- Switching back to Cashier from Admin is also PIN-gated, so a cashier cannot
-  walk into the admin session someone left open.
+- Cashier: 4-digit PIN, fast to type while busy, with a delay after repeated failures.
+- Admin: Sign in with Google. On a device without Google Play services (many POS
+  terminals), admin falls back to a PIN, with the same lockout.
+- Switching back to Cashier from Admin is also gated, so a cashier cannot walk
+  into the admin session someone left open.
+- Full detail: `docs/auth-and-accounts.md`.

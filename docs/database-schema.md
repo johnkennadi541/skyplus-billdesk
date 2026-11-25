@@ -10,7 +10,7 @@ Engine: Room over SQLite, on the device. No backend in v0.1.
 
 | Table | Purpose | Key fields |
 |---|---|---|
-| `users` | The profiles that can operate the till | `id`, `role`, `displayName`, `pinHash`, `pinSalt`, `failedAttempts`, `lockedUntil` |
+| `users` | The profiles that can operate the till | `id`, `role`, `authMethod`, `googleSubject`, `email`, `displayName`, `pinHash`, `pinSalt`, `failedAttempts`, `lockedUntil` |
 | `categories` | Starter, Main Course, Beverages, Combos | `id`, `name`, `sortOrder`, `isActive` |
 | `menu_items` | Sellable items and prices | `id`, `code`, `name`, `categoryId`, `pricePaise`, `taxPercent`, `isActive` |
 | `orders` | A live order before it becomes a bill | `id`, `orderType`, `tableNumber`, `openedAt`, `closedAt` |
@@ -37,6 +37,8 @@ for automatic deduction, if option A is chosen later.
    must never alter a past bill.
 5. **`billNumber` is unique** and sequential per device.
 6. **PINs are stored as a hash with a salt**, never in clear text.
+   A Google account is only accepted if it is on the device's admin allow-list;
+   a valid Google login alone never grants admin.
 7. **Deletes are soft** (`isActive = false`) for categories, menu items and stock
    items, so old bills and old movements still resolve.
 8. **Stock never changes without a `stock_movements` row.** The item's

@@ -13,7 +13,10 @@ Two operating profiles in a single app:
   void / refund, full reports, inventory.
 
 The app lands in the **Admin** profile on the owner's device, and can be set to
-land in Cashier on a cashier's tablet. A PIN is asked on every fresh app start.
+land in Cashier on a cashier's tablet. A login is asked on every fresh app start:
+**Admin signs in with Google, Cashier uses a 4-digit PIN**. On POS terminals that
+ship without Google Play services, Admin falls back to a PIN - see
+`docs/auth-and-accounts.md`.
 
 ## Identity (do not change casually)
 
@@ -50,6 +53,7 @@ skyplus-billdesk/
 ├── docs/
 │   ├── features.md
 │   ├── roles-and-permissions.md
+│   ├── auth-and-accounts.md
 │   └── database-schema.md
 └── README.md
 ```
@@ -59,7 +63,7 @@ skyplus-billdesk/
 | Step | Scope | Status |
 |---|---|---|
 | 1 | Repository, docs, models, permission guard, tests | Done |
-| 2 | Profile switch + PIN, billing engine (tax, discount, totals) | Not started |
+| 2 | Admin Google login + cashier PIN, billing engine (tax, discount, totals), CI build | Not started |
 | 3 | Cashier UI, Admin UI, Room persistence | Not started |
 | 4 | KOT, bill history, print / PDF / share, v0.1.0 release | Not started |
 | 5 | Inventory - stock list, movements, low-stock, stock value | Model done, UI not started |
