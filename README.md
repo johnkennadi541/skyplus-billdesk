@@ -1,5 +1,9 @@
 # SkyPlus BillDesk
 
+Professional offline-first Android restaurant billing app for hotels and
+restaurants - Kotlin, Jetpack Compose, Room Database. Cashier and Admin
+profiles, inventory management. A SKYPLUS product.
+
 Restaurant billing app for Android - one APK for a phone, a tablet and an Android POS terminal.
 
 Two operating profiles in a single app:
