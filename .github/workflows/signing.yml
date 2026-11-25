@@ -1,0 +1,116 @@
+name: Signing fingerprints
+
+# Two jobs, deliberately manual:
+#   debug   - prints the debug certificate SHA-1 / SHA-256, which Google Cloud
+#             needs for the OAuth Android client while we are testing.
+#   release - creates the PERMANENT release keystore and prints its fingerprints.
+#
+# Read this before running "release":
+#   * The keystore this creates is the app's identity. Every future update must be
+#     signed with it. Lose it and the installed copies can never be updated - the
+#     only way out is a new application ID, which forces every user to uninstall.
+#   * Download the artifact immediately and keep it in two places (a password
+#     manager and one offline copy). The artifact expires.
+#   * The password comes from the repository secret KEYSTORE_PASSWORD. Set it in
+#     Settings -> Secrets and variables -> Actions. Nobody else ever sees it.
+#   * Never commit the keystore. .gitignore already blocks *.jks.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Which fingerprints to produce"
+        required: true
+        default: debug
+        type: choice
+        options:
+          - debug
+          - release
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    name: Debug certificate fingerprints
+    if: inputs.mode == 'debug'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - name: Print fingerprints
+        run: |
+          gradle --no-daemon --quiet signingReport 2>/dev/null | tee report.txt
+          echo "---------------------------------------------"
+          echo "SHA-1 and SHA-256 of the debug certificate:"
+          grep -E "SHA1:|SHA-256:|Variant:|Config:" report.txt || true
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-signing-report
+          path: report.txt
+          if-no-files-found: warn
+
+  release:
+    name: Permanent release keystore
+    if: inputs.mode == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Refuse to run without a password
+        env:
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KS_PASS" ]; then
+            echo "::error::KEYSTORE_PASSWORD is not set. Add it in Settings -> Secrets and variables -> Actions, then run again."
+            exit 1
+          fi
+
+      - name: Create the keystore
+        env:
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          keytool -genkeypair -v \
+            -keystore release.jks \
+            -alias skyplus \
+            -keyalg RSA -keysize 4096 -validity 10000 \
+            -storepass "$KS_PASS" -keypass "$KS_PASS" \
+            -dname "CN=SKYPLUS, O=SKYPLUS, L=Chennai, ST=Tamil Nadu, C=IN"
+
+      - name: Print fingerprints
+        env:
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          keytool -list -v -keystore release.jks -storepass "$KS_PASS" \
+            | grep -E "Alias|Owner|Valid|SHA1:|SHA-256:" | tee fingerprints.txt
+          echo "---------------------------------------------"
+          echo "Copy SHA1 and SHA-256 into the Google Cloud Android OAuth client."
+
+      - name: Upload the keystore
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-keystore
+          path: release.jks
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload the fingerprints
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-fingerprints
+          path: fingerprints.txt
+          retention-days: 30
