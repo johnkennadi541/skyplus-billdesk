@@ -24,7 +24,10 @@ object PermissionMatrix {
         Permission.SALES_REPORT_OWN_SHIFT to setOf(UserRole.CASHIER, UserRole.ADMIN),
         Permission.SALES_REPORT_FULL to setOf(UserRole.ADMIN),
         Permission.PROFILE_SWITCH to setOf(UserRole.CASHIER, UserRole.ADMIN),
-        Permission.RESET_CASHIER_PIN to setOf(UserRole.ADMIN)
+        Permission.RESET_CASHIER_PIN to setOf(UserRole.ADMIN),
+        Permission.INVENTORY_VIEW to setOf(UserRole.CASHIER, UserRole.ADMIN),
+        Permission.INVENTORY_EDIT to setOf(UserRole.ADMIN),
+        Permission.STOCK_MOVEMENT to setOf(UserRole.ADMIN)
     )
 
     /** Permissions granted to [role], in declaration order. */

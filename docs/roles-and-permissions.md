@@ -21,6 +21,17 @@ That file is the source of truth; this page must match it.
 | `SALES_REPORT_FULL` | Full sales report, item-wise sales, payment summary | - | Yes |
 | `PROFILE_SWITCH` | Switch between cashier and admin profiles | Yes | Yes |
 | `RESET_CASHIER_PIN` | Reset a cashier PIN | - | Yes |
+| `INVENTORY_VIEW` | See stock levels, low-stock list and stock value | Yes | Yes |
+| `INVENTORY_EDIT` | Add / edit / deactivate stock items, units, reorder levels and cost | - | Yes |
+| `STOCK_MOVEMENT` | Record a purchase, usage, wastage or stock adjustment | - | Yes |
+
+## Landing profile
+
+- The owner's device opens in **Admin** by default.
+- The landing profile is stored per device, so a cashier's tablet can open in Cashier.
+- Every fresh app start asks for that profile's PIN once. There is no "stay admin
+  all day" option: an unattended admin till can change prices and void bills.
+- Switching profile never closes an open bill.
 
 ## Discount policy
 
@@ -33,6 +44,14 @@ The 10% figure is business policy and is a single constant
 (`PermissionGuard.CASHIER_MAX_DISCOUNT_PERCENT`). Confirm the real number with
 the restaurant before release.
 
+## Inventory access
+
+- Cashier: may look at stock levels and the low-stock list. Cannot change anything.
+- Admin: adds and edits stock items, records purchases, usage, wastage and
+  adjustments.
+- If the kitchen should be able to record wastage from a cashier profile, that is
+  one line in `PermissionMatrix` - decide before release, not after.
+
 ## Audit trail
 
 Every saved bill carries:
@@ -44,12 +63,14 @@ Every saved bill carries:
 | `voidedBy` | Which profile voided the bill |
 | `voidedAtEpochMillis` | When it was voided; null means the bill stands |
 
+Every stock movement carries `byRole`, `atEpochMillis` and a note, so a stock
+figure can always be traced back to who entered it and when.
+
 A bill is never deleted. Voiding keeps the row and the reason, so the day's
 accounts can always be reconstructed.
 
-## Profile switching
+## PIN rules
 
-- Switching profile never logs the app out and never closes an open bill.
 - Cashier: 4-digit PIN, fast to type while busy.
 - Admin: 4-6 digit PIN or password, with a delay or lock after repeated failures.
 - Switching back to Cashier from Admin is also PIN-gated, so a cashier cannot

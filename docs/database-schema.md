@@ -18,22 +18,34 @@ Engine: Room over SQLite, on the device. No backend in v0.1.
 | `bills` | Saved bills, never deleted | `id`, `billNumber`, `createdAt`, `orderType`, `tableNumber`, `subtotalPaise`, `taxPaise`, `serviceChargePaise`, `discountPaise`, `grandTotalPaise`, `paymentMode`, `createdByRole`, `discountAppliedBy`, `voidedBy`, `voidedAt` |
 | `bill_items` | Frozen copy of each sold line | `id`, `billId`, `menuItemId`, `nameSnapshot`, `unitPricePaise`, `quantity`, `note` |
 | `payments` | How the money came in | `id`, `billId`, `mode`, `amountPaise`, `paidAt` |
-| `settings` | Restaurant name, tax %, service charge, bill header / footer | `key`, `value` |
+| `inventory_items` | Tracked stock | `id`, `name`, `unit`, `quantityBase`, `reorderLevelBase`, `costPerBasePaise`, `isActive` |
+| `stock_movements` | Every change to stock | `id`, `inventoryItemId`, `type`, `quantityBase`, `atEpochMillis`, `byRole`, `note` |
+| `settings` | Restaurant name, tax %, service charge, bill header / footer, landing profile | `key`, `value` |
 | `audit_log` | Anything sensitive that is not on a bill | `id`, `at`, `role`, `action`, `detail` |
+
+Planned but not built: `recipes` (`menuItemId`, `inventoryItemId`, `quantityBase`)
+for automatic deduction, if option A is chosen later.
 
 ## Rules
 
 1. **Money is `Long` paise** in every column. No `REAL`, no `DOUBLE`.
-2. **Bills are immutable** apart from voiding. Editing a bill creates a new
+2. **Stock quantities are `Long` base units** - grams, millilitres, pieces. Never
+   a floating point number.
+3. **Bills are immutable** apart from voiding. Editing a bill creates a new
    version or a void plus a re-issue, never a silent overwrite.
-3. **`bill_items` copies name and price** at sale time. A later menu price change
+4. **`bill_items` copies name and price** at sale time. A later menu price change
    must never alter a past bill.
-4. **`billNumber` is unique** and sequential per device.
-5. **PINs are stored as a hash with a salt**, never in clear text.
-6. **Deletes are soft** (`isActive = false`) for categories and menu items, so old
-   bills still resolve their items.
-7. **Indices**: `menu_items(code)`, `bills(createdAt)`, `bill_items(billId)`,
-   `orders(closedAt)`.
+5. **`billNumber` is unique** and sequential per device.
+6. **PINs are stored as a hash with a salt**, never in clear text.
+7. **Deletes are soft** (`isActive = false`) for categories, menu items and stock
+   items, so old bills and old movements still resolve.
+8. **Stock never changes without a `stock_movements` row.** The item's
+   `quantityBase` is the running total; the movements are the history. Both are
+   written in one transaction.
+9. **Stock may not go below zero.** A correction is a movement, not a negative
+   quantity.
+10. **Indices**: `menu_items(code)`, `bills(createdAt)`, `bill_items(billId)`,
+    `orders(closedAt)`, `stock_movements(inventoryItemId, atEpochMillis)`.
 
 ## Migrations
 

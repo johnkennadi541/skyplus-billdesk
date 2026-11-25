@@ -32,6 +32,20 @@ class PermissionGuardTest {
     }
 
     @Test
+    fun cashierCanSeeStockButCannotChangeIt() {
+        assertTrue(PermissionGuard.can(UserRole.CASHIER, Permission.INVENTORY_VIEW))
+        assertFalse(PermissionGuard.can(UserRole.CASHIER, Permission.INVENTORY_EDIT))
+        assertFalse(PermissionGuard.can(UserRole.CASHIER, Permission.STOCK_MOVEMENT))
+    }
+
+    @Test
+    fun adminRunsTheInventory() {
+        assertTrue(PermissionGuard.can(UserRole.ADMIN, Permission.INVENTORY_VIEW))
+        assertTrue(PermissionGuard.can(UserRole.ADMIN, Permission.INVENTORY_EDIT))
+        assertTrue(PermissionGuard.can(UserRole.ADMIN, Permission.STOCK_MOVEMENT))
+    }
+
+    @Test
     fun adminHasEveryPermission() {
         Permission.entries.forEach { permission ->
             assertTrue(
@@ -98,6 +112,11 @@ class PermissionGuardTest {
     @Test(expected = PermissionDeniedException::class)
     fun requireThrowsWhenCashierTriesToVoidABill() {
         PermissionGuard.require(UserRole.CASHIER, Permission.VOID_REFUND_EDIT_BILL)
+    }
+
+    @Test(expected = PermissionDeniedException::class)
+    fun requireThrowsWhenCashierTriesToEditStock() {
+        PermissionGuard.require(UserRole.CASHIER, Permission.STOCK_MOVEMENT)
     }
 
     @Test

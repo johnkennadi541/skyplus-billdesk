@@ -5,7 +5,11 @@ Restaurant billing app for Android - one APK for a phone, a tablet and an Androi
 Two operating profiles in a single app:
 
 - **Cashier** - fast billing, cart, KOT, limited discount.
-- **Admin** - menu and pricing, tax and receipt settings, unlimited discount, void / refund, full reports.
+- **Admin** - menu and pricing, tax and receipt settings, unlimited discount,
+  void / refund, full reports, inventory.
+
+The app lands in the **Admin** profile on the owner's device, and can be set to
+land in Cashier on a cashier's tablet. A PIN is asked on every fresh app start.
 
 ## Identity (do not change casually)
 
@@ -33,9 +37,11 @@ skyplus-billdesk/
 ├── app/
 │   └── src/
 │       ├── main/kotlin/com/skyplus/billdesk/
-│       │   ├── model/      UserRole, Permission, Category, MenuItem, OrderItem, Bill, Money
-│       │   ├── auth/       PermissionMatrix, PermissionGuard
-│       │   └── printing/   BillPrinter interface + preview stub
+│       │   ├── model/       UserRole, Permission, Category, MenuItem, OrderItem,
+│       │   │                Bill, Money, InventoryItem, StockMovement
+│       │   ├── auth/        PermissionMatrix, PermissionGuard, LandingProfile
+│       │   ├── inventory/   StockCalculator
+│       │   └── printing/    BillPrinter interface + preview stub
 │       └── test/kotlin/com/skyplus/billdesk/   unit tests
 ├── docs/
 │   ├── features.md
@@ -52,6 +58,13 @@ skyplus-billdesk/
 | 2 | Profile switch + PIN, billing engine (tax, discount, totals) | Not started |
 | 3 | Cashier UI, Admin UI, Room persistence | Not started |
 | 4 | KOT, bill history, print / PDF / share, v0.1.0 release | Not started |
+| 5 | Inventory - stock list, movements, low-stock, stock value | Model done, UI not started |
+
+## Inventory mode
+
+**Manual (option B).** A bill does not touch stock. Stock changes only when the
+admin records a purchase, usage, wastage or adjustment. Recipe-based automatic
+deduction is a later decision.
 
 ## Build
 
