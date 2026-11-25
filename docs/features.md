@@ -45,7 +45,7 @@ automatic deduction (option A) is a later decision and needs a `recipes` table.
 | 1 | Models and roles | Repo, README, .gitignore, UserRole, MenuItem, OrderItem, Bill, permission guards |
 | 2 | Login and billing engine | Admin Google sign-in, cashier PIN, Play services fallback, landing profile, subtotal, tax, discount, grand total, edge case tests, CI build |
 | 3 | Cashier and Admin UI | Menu filter, search, live cart, bill summary; menu CRUD, tax settings, daily summary |
-| 4 | Persistence, KOT, release | Save bills and settings, bill history, KOT preview, print / PDF / share, v0.1.0 tag |
+| 4 | Persistence, KOT, release | Save bills and settings, bill history, KOT preview, 58mm bill print, A4 statement PDF + CSV with hash, v0.1.0 tag |
 | 5 | Inventory | Room tables, stock list, purchase / usage / wastage entry, low-stock list, stock value report |
 | 6 | Supabase Auth | Admin Google login through Supabase, real ID token verification, session refresh |
 | 7 | Two-way sync | Pending queue, idempotent device-generated ids, conflict rules, row level security, sync status screen |
