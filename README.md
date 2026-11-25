@@ -34,8 +34,10 @@ user to uninstall and reinstall, and loses local data.
 ## Stack
 
 - Kotlin + Jetpack Compose
-- Room (local, offline-first) - added in Step 3
-- No backend in v0.1. The device database is the source of truth.
+- Room (local, offline-first) - added in Step 3, and stays the source of truth
+- Supabase (Postgres + Auth, Mumbai `ap-south-1`) for admin login and, from
+  Step 7, two-way sync - see `docs/sync-design.md`
+- v0.1 ships offline-only. Sync is a later step, on purpose.
 
 ## Repository layout
 
@@ -54,6 +56,7 @@ skyplus-billdesk/
 │   ├── features.md
 │   ├── roles-and-permissions.md
 │   ├── auth-and-accounts.md
+│   ├── sync-design.md
 │   └── database-schema.md
 └── README.md
 ```
@@ -67,6 +70,8 @@ skyplus-billdesk/
 | 3 | Cashier UI, Admin UI, Room persistence | Not started |
 | 4 | KOT, bill history, print / PDF / share, v0.1.0 release | Not started |
 | 5 | Inventory - stock list, movements, low-stock, stock value | Model done, UI not started |
+| 6 | Supabase Auth - admin Google login with real token verification | Design done |
+| 7 | Two-way sync - pending queue, conflict rules, RLS | Design done, SQL written |
 
 ## Inventory mode
 

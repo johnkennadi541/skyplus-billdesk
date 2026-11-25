@@ -47,6 +47,8 @@ automatic deduction (option A) is a later decision and needs a `recipes` table.
 | 3 | Cashier and Admin UI | Menu filter, search, live cart, bill summary; menu CRUD, tax settings, daily summary |
 | 4 | Persistence, KOT, release | Save bills and settings, bill history, KOT preview, print / PDF / share, v0.1.0 tag |
 | 5 | Inventory | Room tables, stock list, purchase / usage / wastage entry, low-stock list, stock value report |
+| 6 | Supabase Auth | Admin Google login through Supabase, real ID token verification, session refresh |
+| 7 | Two-way sync | Pending queue, idempotent device-generated ids, conflict rules, row level security, sync status screen |
 
 ## Deliberately out of scope for v0.1
 
