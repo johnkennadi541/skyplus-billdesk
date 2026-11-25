@@ -10,7 +10,9 @@ name: Signing fingerprints
 #     signed with it. Lose it and the installed copies can never be updated - the
 #     only way out is a new application ID, which forces every user to uninstall.
 #   * Download the artifact immediately and keep it in two places (a password
-#     manager and one offline copy). The artifact expires.
+#     manager and one offline copy). The artifact expires after 30 days.
+#   * Run it ONCE. A second run creates a second, different keystore, and only the
+#     first one matches the app you install.
 #   * The password comes from the repository secret KEYSTORE_PASSWORD. Set it in
 #     Settings -> Secrets and variables -> Actions. Nobody else ever sees it.
 #   * Never commit the keystore. .gitignore already blocks *.jks.
@@ -100,12 +102,25 @@ jobs:
           echo "---------------------------------------------"
           echo "Copy SHA1 and SHA-256 into the Google Cloud Android OAuth client."
 
+      - name: Say it plainly in the run summary
+        run: |
+          {
+            echo "## Release keystore created"
+            echo ""
+            echo "1. Download the **release-keystore** artifact now."
+            echo "2. Keep it in two places: a password manager and one offline copy."
+            echo "3. **Do not run this workflow again.** A second run creates a SECOND,"
+            echo "   different keystore, and only the first one matches your app."
+            echo "4. The password is the KEYSTORE_PASSWORD secret. If that is lost, the"
+            echo "   keystore is useless."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload the keystore
         uses: actions/upload-artifact@v4
         with:
           name: release-keystore
           path: release.jks
-          retention-days: 7
+          retention-days: 30
           if-no-files-found: error
 
       - name: Upload the fingerprints
