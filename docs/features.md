@@ -29,7 +29,7 @@ Status legend: Not started / In progress / Done / Blocked.
 | Feature | Detail | Status |
 |---|---|---|
 | Admin landing profile | App opens in Admin on the owner's device, per-device setting, login on every launch | Not started (policy + model done) |
-| Admin Google login | Sign in with Google for the admin profile, PIN fallback on devices without Play services | Not started (policy done) |
+| Admin cloud login | Email + password through Supabase for the admin profile, no Google Cloud, no Firebase | Not started (policy done) |
 | Inventory list | Stock items with unit, quantity, reorder level, cost per unit; low stock highlighted | Not started (model done) |
 | Stock movements | Record purchase, usage, wastage (reason required) and adjustment | Not started (model done) |
 | Stock value and wastage report | Value of stock on hand, wastage for the day / month | Not started |
@@ -43,7 +43,7 @@ automatic deduction (option A) is a later decision and needs a `recipes` table.
 | Week | Goal | Tasks |
 |---|---|---|
 | 1 | Models and roles | Repo, README, .gitignore, UserRole, MenuItem, OrderItem, Bill, permission guards |
-| 2 | Login and billing engine | Admin Google sign-in, cashier PIN, Play services fallback, landing profile, subtotal, tax, discount, grand total, edge case tests, CI build |
+| 2 | Login and billing engine | Admin email sign-in, cashier PIN, landing profile, subtotal, tax, discount, grand total, edge case tests, CI build |
 | 3 | Cashier and Admin UI | Menu filter, search, live cart, bill summary; menu CRUD, tax settings, daily summary |
 | 4 | Persistence, KOT, release | Save bills and settings, bill history, KOT preview, 58mm bill print, A4 statement PDF + CSV with hash, v0.1.0 tag |
 | 5 | Inventory | Room tables, stock list, purchase / usage / wastage entry, low-stock list, stock value report |

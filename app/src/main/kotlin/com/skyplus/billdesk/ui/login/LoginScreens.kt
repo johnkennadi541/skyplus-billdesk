@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -19,47 +21,43 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.skyplus.billdesk.auth.LoginMethod
 import com.skyplus.billdesk.auth.LoginPolicy
 import com.skyplus.billdesk.model.UserRole
 
 /**
  * One entry point that decides which login this device shows.
  *
- * The decision is [LoginPolicy]'s, not the UI's: cashier always PIN, admin Google
- * when Play services exist, admin PIN when they do not. Keeping the decision out
- * of the composable is what makes it testable.
+ * The decision belongs to [LoginPolicy], not to the UI: cashier PIN, admin email and
+ * password. Keeping it out of the composable is what makes it testable.
  */
 @Composable
 fun LoginRoute(
     role: UserRole,
-    playServicesAvailable: Boolean,
     onPinSubmit: (String) -> Unit,
-    onGoogleSignIn: () -> Unit,
+    onEmailSubmit: (String, String) -> Unit,
+    onForgotPassword: () -> Unit = {},
     errorText: String? = null,
     enabled: Boolean = true
 ) {
-    val method = LoginPolicy.methodFor(role, playServicesAvailable)
-
-    if (method == com.skyplus.billdesk.auth.LoginMethod.GOOGLE) {
-        AdminGoogleLoginScreen(
-            onGoogleSignIn = onGoogleSignIn,
-            onUsePinInstead = { onPinSubmit("") },
+    when (LoginPolicy.methodFor(role)) {
+        LoginMethod.PIN -> PinLoginScreen(
+            role = role,
+            title = "Cashier PIN",
+            onSubmit = onPinSubmit,
             errorText = errorText,
             enabled = enabled
         )
-    } else {
-        PinLoginScreen(
-            role = role,
-            title = if (role == UserRole.ADMIN) "Admin PIN" else "Cashier PIN",
-            subtitle = if (role == UserRole.ADMIN && LoginPolicy.adminNeedsPinFallback(playServicesAvailable)) {
-                "Google sign-in is not available on this device, so the admin uses a PIN here."
-            } else {
-                null
-            },
-            onSubmit = onPinSubmit,
+
+        LoginMethod.EMAIL_PASSWORD -> AdminEmailLoginScreen(
+            onSubmit = onEmailSubmit,
+            onForgotPassword = onForgotPassword,
             errorText = errorText,
             enabled = enabled
         )
@@ -126,13 +124,24 @@ fun PinLoginScreen(
     }
 }
 
+/**
+ * Admin sign in with an email and password held in Supabase Auth.
+ *
+ * Deliberately not "Sign in with Google": that would need a Google Cloud project, an
+ * OAuth client tied to a signing fingerprint, brand verification, and Play services
+ * on the device - and the owner does not want Google Cloud or Firebase.
+ */
 @Composable
-fun AdminGoogleLoginScreen(
-    onGoogleSignIn: () -> Unit,
-    onUsePinInstead: () -> Unit,
+fun AdminEmailLoginScreen(
+    onSubmit: (String, String) -> Unit,
+    onForgotPassword: () -> Unit = {},
     errorText: String? = null,
     enabled: Boolean = true
 ) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    val canSubmit = enabled && email.contains("@") && password.length >= 6
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -155,23 +164,50 @@ fun AdminGoogleLoginScreen(
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(20.dp))
-                Button(
-                    onClick = onGoogleSignIn,
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it.trim() },
+                    label = { Text("Email") },
+                    singleLine = true,
                     enabled = enabled,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    ),
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Sign in with Google")
-                }
-                Spacer(Modifier.height(8.dp))
+                )
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    singleLine = true,
+                    enabled = enabled,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
                 errorText?.let {
+                    Spacer(Modifier.height(8.dp))
                     Text(
                         text = it,
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center
                     )
                 }
-                TextButton(onClick = onUsePinInstead, enabled = enabled) {
-                    Text("Use the admin PIN instead")
+                Spacer(Modifier.height(20.dp))
+                Button(
+                    onClick = { onSubmit(email, password) },
+                    enabled = canSubmit,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Sign in")
+                }
+                TextButton(onClick = onForgotPassword, enabled = enabled) {
+                    Text("Forgot password")
                 }
             }
         }

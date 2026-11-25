@@ -18,22 +18,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.skyplus.billdesk.auth.LandingProfile
-import com.skyplus.billdesk.platform.PackageManagerPlayServicesChecker
 import com.skyplus.billdesk.ui.login.LoginRoute
 import com.skyplus.billdesk.ui.theme.SkyPlusBillDeskTheme
 
 /**
  * Entry point.
  *
- * Step 2 wires the login screens to a placeholder session. The real PIN check, the
- * Google sign-in and the billing screens arrive next; until then the placeholder
- * says plainly that the unlock is not connected, rather than pretending to work.
+ * The screens are wired to a placeholder session: the PIN check and the Supabase
+ * email sign-in arrive with the session store. Until then the placeholder says so
+ * plainly instead of pretending to work.
  */
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val playServices = PackageManagerPlayServicesChecker(this)
 
         setContent {
             SkyPlusBillDeskTheme {
@@ -41,7 +39,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppEntry(playServicesAvailable = playServices.isAvailable())
+                    AppEntry()
                 }
             }
         }
@@ -49,7 +47,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun AppEntry(playServicesAvailable: Boolean) {
+private fun AppEntry() {
     var unlocked by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -62,7 +60,6 @@ private fun AppEntry(playServicesAvailable: Boolean) {
 
     LoginRoute(
         role = LandingProfile.DEFAULT,
-        playServicesAvailable = playServicesAvailable,
         onPinSubmit = { pin ->
             error = if (pin.isEmpty()) {
                 "PIN entry is not connected yet."
@@ -70,8 +67,11 @@ private fun AppEntry(playServicesAvailable: Boolean) {
                 "PIN check is not connected yet - it arrives with the session store."
             }
         },
-        onGoogleSignIn = {
-            error = "Google sign-in is not connected yet - it needs the Supabase project."
+        onEmailSubmit = { _, _ ->
+            error = "Supabase sign-in is not connected yet - it needs the project URL and key."
+        },
+        onForgotPassword = {
+            error = "Password reset needs the Supabase project too."
         },
         errorText = error
     )

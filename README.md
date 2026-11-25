@@ -14,9 +14,10 @@ Two operating profiles in a single app:
 
 The app lands in the **Admin** profile on the owner's device, and can be set to
 land in Cashier on a cashier's tablet. A login is asked on every fresh app start:
-**Admin signs in with Google, Cashier uses a 4-digit PIN**. On POS terminals that
-ship without Google Play services, Admin falls back to a PIN - see
-`docs/auth-and-accounts.md`.
+**Admin signs in with an email and password, Cashier uses a 4-digit PIN.** No Google
+Cloud and no Firebase: Google sign-in needs an OAuth client tied to a signing
+fingerprint and Google Play services on the device, which POS terminals often lack.
+See `docs/auth-and-accounts.md`.
 
 ## Identity (do not change casually)
 
@@ -71,7 +72,7 @@ skyplus-billdesk/
 | 3 | Cashier UI, Admin UI, Room persistence | Not started |
 | 4 | KOT, bill history, print / PDF / share, v0.1.0 release | Not started |
 | 5 | Inventory - stock list, movements, low-stock, stock value | Model done, UI not started |
-| 6 | Supabase Auth - admin Google login with real token verification | Design done |
+| 6 | Supabase Auth - admin email/password login with real token verification | Design done |
 | 7 | Two-way sync - pending queue, conflict rules, RLS | Design done, SQL written |
 
 ## Inventory mode

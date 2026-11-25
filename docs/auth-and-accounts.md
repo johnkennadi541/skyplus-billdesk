@@ -1,74 +1,62 @@
 # Login and accounts
 
-Status: design agreed, not implemented. Code arrives in Step 2.
+Status: decided and partly implemented. No Google Cloud, no Firebase.
 
 ## Who logs in with what
 
-| Profile | Login | Why |
+| Profile | Login | Where it lives |
 |---|---|---|
-| Cashier | 4-digit PIN | Speed at the counter. A Google account picker on every bill is not acceptable. |
-| Admin | Sign in with Google | Real identity for the person who can change prices, void bills and run reports. |
-| Admin, on a device without Google Play services | PIN | The terminal cannot do Google sign-in at all. |
+| Cashier | 4-digit PIN | On the device only |
+| Admin | Email + password | Supabase Auth (Postgres, region `ap-south-1` Mumbai) |
 
-A PIN fallback exists on every device, always. A till that cannot be opened is
-worse than a till with a weaker login.
+## Why not Sign in with Google
 
-## The Play services problem
+Google sign-in was the first plan. It was dropped on the owner's instruction, and it
+was the right call for four reasons:
 
-Sign in with Google on Android runs through Google Play services. Google's own
-documentation says devices without the Play Store do not have Play services
-installed, and tells developers to check for it before calling any Google API.
-Android POS terminals frequently ship without it.
+1. It needs a **Google Cloud project**, an OAuth consent screen and an OAuth client.
+2. The Android OAuth client is bound to the **SHA-1 of the signing key**, so it breaks
+   the moment the key changes, and it needs one client per key.
+3. It needs **Google Play services on the device**. Google's own documentation says
+   devices without the Play Store do not have Play services, and many Android POS
+   terminals are exactly that. On those tills the button would simply not work.
+4. Google requires **brand verification** of the consent screen before the app name is
+   shown, which can take days.
 
-So the app must, at startup:
+Email and password through Supabase removes all four. No Google account, no
+fingerprint, no Play services, no brand review. The admin can sign in on any device,
+including a POS terminal with no Play Store.
 
-1. Ask `GoogleApiAvailability.isGooglePlayServicesAvailable(context)`.
-2. If it is missing and the landing profile is Admin, show the PIN screen with a
-   clear line explaining why, not a broken button.
+## Why the cashier stays on a PIN
 
-`LoginPolicy` in `app/src/main/kotlin/com/skyplus/billdesk/auth/LoginPolicy.kt`
-holds this rule and is unit tested.
+- Speed. A password at 8pm on a busy Friday costs seconds on every bill.
+- The cashier does not need a verified identity; the admin does.
+- A PIN works with no network. A cloud sign-in does not.
 
-## What the Google account gives us in v0.1
+The cashier's PIN is hashed on the device (PBKDF2, 120,000 iterations, per-profile
+salt) and never leaves it.
 
-Identity only. The app stores the account's `sub` (stable Google user id), email
-and display name locally, and stamps the audit fields on bills and stock movements
-with it. Nothing is uploaded anywhere, and no bill leaves the device.
+## Rules
 
-An honest limitation: without a backend, an ID token cannot be fully verified
-against Google's servers. For v0.1 the account is a local identity label, not a
-security boundary - the PIN is what actually protects the till. Real verification
-needs a backend and is a later decision.
+1. **Sign-ups are disabled in Supabase.** The owner's account is created by hand, in
+   the Supabase dashboard. Nobody can register into this app.
+2. **A cloud account alone never grants admin.** The account must also be on the
+   device's admin allow-list.
+3. **The admin password is never stored in the app.** Supabase issues a session token;
+   only the refresh token is kept, in encrypted storage.
+4. **Offline:** if the admin cannot reach the network at open, the device falls back to
+   the admin PIN, and sync resumes after the next successful sign-in. A till that
+   cannot be opened is worse than one with a weaker login.
+5. **Password reset** goes through Supabase's email reset link, which returns through
+   the deep link `com.skyplus.billdesk://login-callback`.
 
-## Setup needed before the Google login can work
+## Setup still needed
 
-1. A Google Cloud project for SKYPLUS.
-2. An **Android** OAuth client, which requires the exact package name
-   (`com.skyplus.billdesk`) and the **SHA-1 fingerprint of the signing key**.
-3. Separate OAuth clients for the debug key and the release key. They have
-   different fingerprints and one client cannot serve both.
-4. The OAuth consent screen filled in, and brand verification submitted. Google
-   requires the brand to be verified before the app name appears on the consent
-   screen, and approval can take days.
+1. A Supabase project, region `ap-south-1` (Mumbai). Free plan is enough to build.
+2. Authentication → Providers → Email: enabled, "Confirm email" on, "Allow new users to
+   sign up" **off**.
+3. Create the owner's account in the dashboard.
+4. Add the project URL and the **anon** key to the app. The anon key is public by
+   design and safe in a client; the **service_role key is never** put in the app.
 
-## The dependency this creates
-
-The signing key must be decided before the release OAuth client is created. If the
-signing key changes after release, every installed copy loses Google sign-in. This
-is the same pending decision as the weather app, and it cannot be deferred past
-Step 2.
-
-## Data stored
-
-`users` gains:
-
-| Column | Meaning |
-|---|---|
-| `authMethod` | PIN or GOOGLE |
-| `googleSubject` | The Google `sub` value, stable per account |
-| `email` | Display only |
-| `displayName` | Display only |
-| `pinHash`, `pinSalt` | For PIN logins; never stored in clear |
-
-A Google account is never trusted to grant admin by itself: the account must be on
-the local allow-list of admin accounts, stored on the device.
+No Google Cloud project, no OAuth client, no SHA-1 fingerprint, no Firebase.

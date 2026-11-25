@@ -52,7 +52,7 @@ Equal timestamps keep the existing row: a tie is not a reason to overwrite.
 | Syncs | Does not sync |
 |---|---|
 | Bills and bill items | The cashier's PIN (stays on the device) |
-| Menu and categories | Google ID tokens (never stored) |
+| Menu and categories | Session tokens (never logged) |
 | Inventory items and movements | Device settings that are device-specific |
 | Outlet settings | |
 
