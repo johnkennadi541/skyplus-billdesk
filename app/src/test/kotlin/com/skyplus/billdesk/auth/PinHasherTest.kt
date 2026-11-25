@@ -60,7 +60,7 @@ class PinHasherTest {
     fun aMalformedRecordIsRejected() {
         assertFalse(PinHasher.verify("1947", "not-a-record"))
         assertFalse(PinHasher.isWellFormed("not-a-record"))
-        assertFalse(PinHasher.isWellFormed("a$b$c$d"))
+        assertFalse(PinHasher.isWellFormed("a" + "$" + "b" + "$" + "c" + "$" + "d"))
     }
 
     @Test
