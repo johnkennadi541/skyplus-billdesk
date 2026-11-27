@@ -12,7 +12,7 @@ class LocalWifiEventSync(private val dao: EventSyncDao) {
         Socket().use { socket ->
             socket.connect(java.net.InetSocketAddress(host, port), timeoutMillis)
             socket.soTimeout = timeoutMillis
-            EventWireCodec.write(socket.getOutputStream().buffered().let(::java.io.DataOutputStream), dao.allEventsBlocking())
+            EventWireCodec.write(java.io.DataOutputStream(socket.getOutputStream().buffered()), dao.allEventsBlocking())
             val remote = EventWireCodec.read(java.io.DataInputStream(socket.getInputStream().buffered()))
             return dao.mergeIncomingBlocking(remote)
         }

@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.skyplus.billdesk.data.entity.*
-import com.skyplus.billdesk.data.lease.TableEditLeasePolicy
 import java.util.UUID
 
 @Dao

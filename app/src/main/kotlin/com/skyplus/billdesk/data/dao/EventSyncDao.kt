@@ -8,7 +8,6 @@ import androidx.room.Transaction
 import com.skyplus.billdesk.data.entity.EventLogEntity
 import com.skyplus.billdesk.sync.EventMerger
 import com.skyplus.billdesk.sync.EventOrdering
-import com.skyplus.billdesk.sync.OrderCancellationPayload
 
 @Dao
 abstract class EventSyncDao {
