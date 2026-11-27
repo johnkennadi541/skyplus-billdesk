@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabase.JournalMode
+import com.skyplus.billdesk.data.dao.EventSyncDao
 import com.skyplus.billdesk.data.dao.PosDao
 import com.skyplus.billdesk.data.dao.PrintQueueDao
 import com.skyplus.billdesk.data.dao.PrinterProfileDao
@@ -24,6 +25,7 @@ import com.skyplus.billdesk.data.entity.*
 )
 abstract class BillDeskDatabase : RoomDatabase() {
     abstract fun posDao(): PosDao
+    abstract fun eventSyncDao(): EventSyncDao
     abstract fun printQueueDao(): PrintQueueDao
     abstract fun printerProfileDao(): PrinterProfileDao
     abstract fun tableLeaseDao(): TableLeaseDao
